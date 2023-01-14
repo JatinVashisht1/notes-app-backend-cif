@@ -3,6 +3,21 @@ import createHttpError from "http-errors";
 import bcrypt from "bcrypt"
 import UserModel from "../models/users";
 
+export const getAuthenticatedUser: RequestHandler = async (req, res, next)=>{
+    const authenticatedUserId = req.session.userId;
+
+    try {
+        if(!authenticatedUserId) throw createHttpError(401, "User not authenticated.")
+
+        const user = await UserModel.findById(authenticatedUserId).select("+email").exec()
+
+        return res.status(200).json({success: true, message: user})
+
+    } catch (error) {
+        next(error)
+    }
+}
+
 interface signUpBody{
     username?: string,
     email?: string,
@@ -35,10 +50,52 @@ export const signUp: RequestHandler<unknown, unknown, signUpBody, unknown> = asy
             password: passwordHashed
         })
 
+        req.session.userId = newUser._id;
+
         return res.status(201).json({success: true, message: newUser})
 
     } catch (error) {
         next(error)
     }
+}
 
+interface loginBody{
+    username?: string,
+    password?: string,
+}
+export const login: RequestHandler<unknown, unknown, loginBody, unknown> = async(req, res, next)=>{
+    const username = req.body.username;
+    const password = req.body.password;
+
+    try {
+        if(!username || !password) throw createHttpError(400, "Parameters missing.");
+
+        const user = await UserModel.findOne({username: username}).select("+password +email").exec();
+
+        if(!user) throw createHttpError(401, "Invalid credentials.");
+
+        
+        const passwordMatch = await bcrypt.compare(password, user.password);
+
+        if(!passwordMatch) throw createHttpError(401, "Invalid credentials.");
+
+        req.session.userId = user._id;
+
+        return res.status(201).json({success: true, message: user})
+
+
+    } catch (error) {
+        next(error)
+    }
+};
+
+export const logout: RequestHandler = async (req, res, next)=>{
+    
+    // this does not return a promise, instead it returns a callback
+    req.session.destroy(error => {
+        if(error) next(error)
+        else{
+            res.status(200).json({success: true, message: "User logged out successfully."})
+        }
+    })
 }
