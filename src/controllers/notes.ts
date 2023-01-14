@@ -38,6 +38,7 @@ export const getNote: RequestHandler = async(req, res, next)=>{
     }
 };
 
+// all these fields are made optional because we don't know whether user sent these fields or not
 interface CreateNoteBody{
     title?: string
     text?: string
