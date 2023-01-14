@@ -1,24 +1,14 @@
 import "dotenv/config";
 import express, { Express, NextFunction, Request, Response } from "express";
-import NoteModel from "./models/note"
-
+import morgan from "morgan"
+import notesRoutes from "../src/routes/notes"
 const app: Express = express();
 
-app.get("/", async (req, res, next) => {
-    /*
-    if our code was synchronous then expree would have automatically called next function
-    if will be changed in next major version of express
-    node version as of writing the comment is 4.18.2
-    default next function calling will be introduced for async code also
-    */
-    try {
-        // throw Error("An unknown error")
-        const notes = await NoteModel.find().exec();
-        return res.status(200).json({ success: true, notes: notes });
-    } catch (error) {
-        next(error);
-    }
-});
+app.use(morgan('dev'))
+
+app.use(express.json());
+
+app.use('/api/notes', notesRoutes);
 
 app.use((req, res, next)=>{
    next(Error("Endpoint not found"));
