@@ -7,6 +7,7 @@ import notesRoutes from "../src/routes/notes"
 import userRoutes from "../src/routes/users"
 import env from "./util/validateEnv"
 import MongoStore from "connect-mongo";
+import { requiresAuth } from "./middleware/auth";
 
 const SESSION_SECRET = env.SESSION_SECRET
 
@@ -33,7 +34,7 @@ app.use(session({
     }),
 }));
 
-app.use('/api/notes', notesRoutes);
+app.use('/api/notes', requiresAuth, notesRoutes);
 
 app.use('/api/users', userRoutes);
 
