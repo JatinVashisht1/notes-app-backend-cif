@@ -7,7 +7,11 @@ import notesRoutes from "../src/routes/notes"
 import userRoutes from "../src/routes/users"
 import env from "./util/validateEnv"
 import MongoStore from "connect-mongo";
-import { requiresAuth } from "./middleware/auth";
+// import { requiresAuth } from "./middleware/auth";
+import PassportManager from "./util/passportUtils";
+import strategy from "./util/passportGoogleStrategy";
+import googleRoutes from "../src/routes/google";
+import * as jwtUtils from "./util/jwtUtil";
 
 const SESSION_SECRET = env.SESSION_SECRET
 
@@ -34,9 +38,18 @@ app.use(session({
     }),
 }));
 
-app.use('/api/notes', requiresAuth, notesRoutes);
+
+const passportManager = new PassportManager(app);
+passportManager.initialisePassport();
+passportManager.useStrategy(strategy);
+
+app.use('/api/notes', jwtUtils.authMiddleware, notesRoutes);
 
 app.use('/api/users', userRoutes);
+
+app.use('/auth/google', googleRoutes);
+
+app.get('/protected', jwtUtils.authMiddleware);
 
 app.use((req, res, next)=>{
    next(createHttpError(404,"Endpoint not found"));

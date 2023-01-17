@@ -1,3 +1,5 @@
+dist
+*.pem
 # Logs
 logs
 *.log

@@ -1,5 +1,6 @@
 import { RequestHandler } from "express";
 import createHttpError from "http-errors";
+import { JwtPayload } from "jsonwebtoken";
 import mongoose from "mongoose";
 import NoteModel from "../models/note"
 import { assertIsDefined } from "../util/assertIsDefined";
@@ -12,7 +13,9 @@ i.e, it means we are not using the parameter int he function
 */
 export const getNotes: RequestHandler = async (req, res, next) => {
 
-    const authenticatedUserId = req.session.userId;
+    const jwtPayload = req.jwt as JwtPayload;
+    const authenticatedUserId = jwtPayload.sub;
+    
 
     
     /*
@@ -34,7 +37,8 @@ export const getNotes: RequestHandler = async (req, res, next) => {
 
 export const getNote: RequestHandler = async(req, res, next)=>{
     const noteId = req.params.noteId;
-    const authenticatedUserId = req.session.userId;
+    const jwtPayload = req.jwt as JwtPayload;
+    const authenticatedUserId = jwtPayload.sub;
     try {
 
         assertIsDefined(authenticatedUserId)
@@ -65,7 +69,8 @@ export const createNote: RequestHandler<unknown, unknown, CreateNoteBody, unknow
     const title = req.body.title;
     const text = req.body.text;
     
-    const authenticatedUserId = req.session.userId;
+    const jwtPayload = req.jwt as JwtPayload;
+    const authenticatedUserId = jwtPayload.sub;
 
     try {
 
@@ -97,7 +102,8 @@ export const updateNote: RequestHandler<updateNoteParams, unknown, updateNoteBod
     const newTitle = req.body.title;
     const newText = req.body.text;
 
-    const authenticatedUserId = req.session.userId;
+    const jwtPayload = req.jwt as JwtPayload;
+    const authenticatedUserId = jwtPayload.sub;
 
     try {
 
@@ -149,6 +155,6 @@ export const deleteNote: RequestHandler<delteNoteParams, unknown, unknown, unkno
         return res.status(200).json({success: true, message: "Note deleted successfully."})
 
     } catch (error) {
-        next(error)
+        next(error);
     }
 }

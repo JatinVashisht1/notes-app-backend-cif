@@ -1,6 +1,7 @@
 import express from "express"
 import * as UserController from "../controllers/users"
-import { requiresAuth } from "../middleware/auth";
+// import { requiresAuth } from "../middleware/auth";
+import * as jwtUtils from "../util/jwtUtil";
 
 const router = express.Router();
 
@@ -10,7 +11,7 @@ router.post("/login", UserController.login);
 
 router.post("/logout", UserController.logout);
 
-router.get("/", requiresAuth, UserController.getAuthenticatedUser);
+router.get("/", jwtUtils.authMiddleware , UserController.getAuthenticatedUser);
 
 
 export default router;
