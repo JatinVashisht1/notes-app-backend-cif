@@ -9,6 +9,8 @@ router.post("/signup", UserController.signUp);
 
 router.post("/login", UserController.login);
 
+router.post("/loginGoogle", UserController.loginGoogle);
+
 router.post("/logout", UserController.logout);
 
 router.get("/", jwtUtils.authMiddleware , UserController.getAuthenticatedUser);
