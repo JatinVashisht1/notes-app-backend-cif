@@ -92,9 +92,6 @@ export const login: RequestHandler<unknown, unknown, loginBody, unknown> = async
 
         if(!isPasswordValid) throw createHttpError(401, "Invalid credentials");
 
-        req.session.userId = user._id;
-        req.isAuthenticated = () => {return true};
-
         const jwt = jwtUtils.issueJWT(user._id);
 
         await user.update({$push: {tokens: jwt.token}}).exec();
@@ -132,8 +129,10 @@ export const logout: RequestHandler = async (req, res, next)=>{
                         tokens: token
                     },
                 }).exec();
-                console.log(`user updated is ${JSON.stringify(userUpdated)}`);
-                return res.status(200).json({success: true, message: "User logged out successfully!"});
+                // console.log(`user updated is ${JSON.stringify(userUpdated)}`);
+                if(userUpdated['acknowledged'])
+                    return res.status(200).json({success: true, message: "User logged out successfully!"});
+                else throw createHttpError(500, "Unable to logout.");
             }
             
         }

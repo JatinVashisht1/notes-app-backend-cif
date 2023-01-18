@@ -103,7 +103,7 @@ export const authMiddleware: RequestHandler = async (req, res, next) => {
                 const tokenExist = await jwtDbChecker(objectId, tokenPartsString);
                 if(!tokenExist) throw Error("Token not found");
 
-                console.log('verification is ', verification)
+                // console.log('verification is ', verification)
                 req.jwt = verification;
                 req.token = tokenPartsString;
                 next();

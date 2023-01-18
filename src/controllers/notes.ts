@@ -136,10 +136,14 @@ interface delteNoteParams{
 export const deleteNote: RequestHandler<delteNoteParams, unknown, unknown, unknown> = async(req, res, next)=>{
     const noteId = req.params.noteId;
     
-    const authenticatedUserId = req.session.userId;
-
+    const jwt = req.jwt;
+    const authenticatedUserIdStr = jwt['sub'];
     try {
-        assertIsDefined(authenticatedUserId);
+        assertIsDefined(jwt);
+        assertIsDefined(authenticatedUserIdStr);
+        
+        const authenticatedUserId = new mongoose.Types.ObjectId(authenticatedUserIdStr.toString());
+        
 
         if(!mongoose.isValidObjectId(noteId)) throw createHttpError(400, "Invalid note id");
 
