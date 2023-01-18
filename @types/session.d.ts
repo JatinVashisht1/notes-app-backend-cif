@@ -15,7 +15,8 @@ declare global {
             email: string,
         }
         interface Request {
-            jwt: JwtPayload | string
+            jwt: JwtPayload | string,
+            token: string,
           }
     }
 }

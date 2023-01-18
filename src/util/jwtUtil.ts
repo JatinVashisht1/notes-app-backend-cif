@@ -5,6 +5,7 @@ import path from 'path'
 import mongoose from 'mongoose'
 import { RequestHandler } from 'express'
 import createHttpError from 'http-errors'
+import jwtDbChecker from './jwtDbChecker';
 
 const pathToPrivKey = path.join(__dirname, '..', '..','id_rsa_priv.pem');
 const pathToPubKey = path.join(__dirname, '..', '..' ,'id_rsa_pub.pem');
@@ -71,7 +72,7 @@ export interface jwtType{
  */
 export function issueJWT(id: mongoose.Types.ObjectId): jwtType {
 
-    const expiresIn = '1d';
+    const expiresIn = '1y';
 
     const payload = {
         sub: id,
@@ -86,7 +87,7 @@ export function issueJWT(id: mongoose.Types.ObjectId): jwtType {
     };
 }
 
-export const authMiddleware: RequestHandler = (req, res, next) => {
+export const authMiddleware: RequestHandler = async (req, res, next) => {
     try {
         const tokenPartsString = req.headers.authorization
         if(!tokenPartsString) throw createHttpError(401, "you are not authorized to visit this route.");
@@ -97,8 +98,14 @@ export const authMiddleware: RequestHandler = (req, res, next) => {
                 const verification = jsonwebtoken.verify(tokenParts[1], PUB_KEY, {
                     algorithms: ['RS256']
                 })
+
+                const objectId = verification['sub']?.toString() || "";
+                const tokenExist = await jwtDbChecker(objectId, tokenPartsString);
+                if(!tokenExist) throw Error("Token not found");
+
                 console.log('verification is ', verification)
                 req.jwt = verification;
+                req.token = tokenPartsString;
                 next();
             } catch (error) {
                 // console.log('error occured', error.message)
